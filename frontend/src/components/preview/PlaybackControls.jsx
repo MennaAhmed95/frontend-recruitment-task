@@ -1,7 +1,6 @@
 import { Minus, Plus, Scissors } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { useHistoryStore } from "@/stores/historyStore";
 import { useTimelineStore } from "@/stores/timelineStore";
 import { formatTime } from "@/utils/time";
 
@@ -12,26 +11,9 @@ export function PlaybackControls() {
 
   const setPlayhead = useTimelineStore((s) => s.actions.setPlayhead);
   const setZoom = useTimelineStore((s) => s.actions.setZoom);
-  const split = useTimelineStore((s) => s.actions.splitActiveClipAtPlayhead);
 
   return (
     <div className="flex flex-col gap-3 border-b border-slate-200 px-3 py-2 md:flex-row md:items-center md:justify-between md:px-4">
-      {/* Left: Split */}
-      <div className="flex items-center gap-2">
-        <Button
-          size="sm"
-          variant="outline"
-          className="w-full md:w-auto"
-          onClick={() => {
-            useHistoryStore.getState().actions.push(snapshotNow());
-            split();
-          }}
-        >
-          <Scissors className="mr-2 h-4 w-4" />
-          Split Clip
-        </Button>
-      </div>
-
       {/* Center: Time + Slider */}
       <div className="flex flex-col gap-2 text-sm text-slate-700 md:flex-1 md:items-center">
         <div className="tabular-nums text-center md:text-left">
@@ -74,8 +56,4 @@ export function PlaybackControls() {
       </div>
     </div>
   );
-}
-
-function snapshotNow() {
-  return useTimelineStore.getState().actions.toEditor();
 }
