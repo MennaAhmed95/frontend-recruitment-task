@@ -1,20 +1,20 @@
-import { useTimelineStore } from '@/stores/timelineStore'
-import { secondsToPx } from '@/utils/timelineScale'
-import { LABEL_WIDTH } from '@/utils/timelineLayout'
-import { Clip } from '@/components/timeline/Clip'
-import { Button } from '@/components/ui/button'
+import { useTimelineStore } from "@/stores/timelineStore";
+import { secondsToPx } from "@/utils/timelineScale";
+import { LABEL_WIDTH } from "@/utils/timelineLayout";
+import { Clip } from "@/components/timeline/Clip";
+import { Button } from "@/components/ui/button";
 
 export function Track({ track, draggingClipId, onClipMouseDown }) {
-  const zoom = useTimelineStore((s) => s.zoom)
-  const duration = useTimelineStore((s) => s.duration)
-  const width = Math.max(800, secondsToPx(duration, zoom) + 200)
+  const zoom = useTimelineStore((s) => s.zoom);
+  const duration = useTimelineStore((s) => s.duration);
+  const width = Math.max(800, secondsToPx(duration, zoom) + 200);
 
-  const selected = useTimelineStore((s) => s.selectedClipIds)
-  const activeId = useTimelineStore((s) => s.activeClipId)
-  const selectClip = useTimelineStore((s) => s.actions.selectClip)
-  const activateClip = useTimelineStore((s) => s.actions.activateClip)
-  const addClipToTrack = useTimelineStore((s) => s.actions.addClipToTrack)
-  const deleteTrack = useTimelineStore((s) => s.actions.deleteTrack)
+  const selected = useTimelineStore((s) => s.selectedClipIds);
+  const activeId = useTimelineStore((s) => s.activeClipId);
+  const selectClip = useTimelineStore((s) => s.actions.selectClip);
+  const activateClip = useTimelineStore((s) => s.actions.activateClip);
+  const addClipToTrack = useTimelineStore((s) => s.actions.addClipToTrack);
+  const deleteTrack = useTimelineStore((s) => s.actions.deleteTrack);
 
   return (
     <div
@@ -44,8 +44,8 @@ export function Track({ track, draggingClipId, onClipMouseDown }) {
       </div>
       <div className="relative h-9" style={{ width }}>
         {track.clips.map((c) => {
-          const left = secondsToPx(c.startTime, zoom)
-          const w = Math.max(8, secondsToPx(c.endTime - c.startTime, zoom))
+          const left = secondsToPx(c.startTime, zoom);
+          const w = Math.max(8, secondsToPx(c.endTime - c.startTime, zoom));
           return (
             <Clip
               key={c.id}
@@ -59,10 +59,9 @@ export function Track({ track, draggingClipId, onClipMouseDown }) {
               onActivate={() => activateClip(c.id)}
               onMouseDown={(event) => onClipMouseDown(c, event)}
             />
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }
-
