@@ -13,7 +13,6 @@ export function Timeline() {
   const playhead = useTimelineStore((s) => s.playhead);
   const setPlayhead = useTimelineStore((s) => s.actions.setPlayhead);
   const hasSelection = useTimelineStore((s) => s.actions.hasSelection());
-  const hasProject = useTimelineStore((s) => !!s.projectId);
   const splitSelected = useTimelineStore(
     (s) => s.actions.splitSelectedClipAtMidpoint,
   );
@@ -48,11 +47,7 @@ export function Timeline() {
   return (
     <div className="border-t border-slate-200">
       <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-4 py-2">
-        <Button
-          size="sm"
-          onClick={() => addTrack("video")}
-          disabled={!hasProject}
-        >
+        <Button size="sm" onClick={() => addTrack("video")}>
           + Add New Track
         </Button>
         <div className="flex items-center gap-2">
