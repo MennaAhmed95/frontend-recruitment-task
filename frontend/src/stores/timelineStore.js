@@ -12,7 +12,7 @@ export const useTimelineStore = create((set, get) => ({
   duration: 60,
   playhead: 10,
   zoom: 1, // timeline scale
-  tracks: demoTracks(),
+  tracks: [],
   activeClipId: null,
   selectedClipIds: [],
 
@@ -34,14 +34,33 @@ export const useTimelineStore = create((set, get) => ({
       set(() => ({ activeClipId: clipId, selectedClipIds: [clipId] }))
     },
     loadFromEditor(editor) {
-      if (!editor) return
+      // When switching projects, always replace timeline state from the project.
+      if (!editor) {
+        set(() => ({
+          duration: 60,
+          playhead: 0,
+          zoom: 1,
+          tracks: [],
+          activeClipId: null,
+          selectedClipIds: [],
+        }))
+        return
+      }
+
+      const tracks = Array.isArray(editor.tracks) ? editor.tracks : []
+      const zoom = editor.zoom ?? editor.scale ?? 1
+      const duration = Math.max(editor.duration ?? 60, maxEndTime(tracks))
+      const playhead = clamp(editor.playhead ?? 0, 0, duration)
+
       set(() => ({
-        duration: editor.duration ?? 60,
-        playhead: editor.playhead ?? 0,
-        zoom: editor.zoom ?? editor.scale ?? 1,
-        tracks: editor.tracks ?? demoTracks(),
+        duration,
+        playhead,
+        zoom,
+        tracks,
         activeClipId: editor.activeClipId ?? null,
-        selectedClipIds: editor.selectedClipIds ?? [],
+        selectedClipIds: Array.isArray(editor.selectedClipIds)
+          ? editor.selectedClipIds
+          : [],
       }))
     },
     toEditor() {
@@ -92,32 +111,6 @@ export const useTimelineStore = create((set, get) => ({
           selectedClipIds: [right.id],
         }
       })
-    },
-    addClipToFirstTrack() {
-      const s = get()
-      const firstTrack = s.tracks[0]
-      if (!firstTrack) return
-
-      const id = crypto.randomUUID()
-      const startTime = Math.max(0, s.playhead)
-      const clipLen = 8
-      const endTime = startTime + clipLen
-      const newDuration = Math.max(s.duration, endTime)
-      const clip = {
-        id,
-        startTime,
-        endTime,
-        data: { name: `New clip (${firstTrack.name})` },
-      }
-
-      set((state) => ({
-        duration: newDuration,
-        tracks: state.tracks.map((t) =>
-          t.id === firstTrack.id ? { ...t, clips: [...t.clips, clip] } : t,
-        ),
-        activeClipId: id,
-        selectedClipIds: [id],
-      }))
     },
     addTrack(type = 'video') {
       set((s) => {
@@ -230,63 +223,18 @@ export const useTimelineStore = create((set, get) => ({
   },
 }))
 
-function demoTracks() {
-  return [
-    {
-      id: 'track-bg',
-      type: 'background',
-      name: 'Background',
-      clips: [
-        {
-          id: 'c-bg',
-          startTime: 0,
-          endTime: 55,
-          data: { name: 'Background' },
-        },
-      ],
-    },
-    {
-      id: 'track-v1',
-      type: 'video',
-      name: 'Video Track 1 (Text: VIDEO)',
-      clips: [
-        { id: 'c-v1', startTime: 0, endTime: 55, data: { name: 'VIDEO' } },
-      ],
-    },
-    {
-      id: 'track-v2',
-      type: 'video',
-      name: 'Video Track 2 (icons)',
-      clips: [
-        { id: 'c-v2', startTime: 0, endTime: 55, data: { name: 'icons' } },
-      ],
-    },
-    {
-      id: 'track-a1',
-      type: 'audio',
-      name: 'Audio Track 1 (Intro)',
-      clips: [
-        {
-          id: 'c-a1',
-          startTime: 0,
-          endTime: 55,
-          data: { name: 'Intro - Artist' },
-        },
-      ],
-    },
-    {
-      id: 'track-a2',
-      type: 'audio',
-      name: 'Audio Track 2 (Outro.mp3)',
-      clips: [
-        { id: 'c-a2', startTime: 18, endTime: 38, data: { name: 'Outro.mp3' } },
-      ],
-    },
-  ]
-}
-
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v))
+}
+
+function maxEndTime(tracks) {
+  let max = 0
+  for (const t of tracks) {
+    for (const c of t?.clips ?? []) {
+      if (typeof c?.endTime === 'number' && c.endTime > max) max = c.endTime
+    }
+  }
+  return max
 }
 
 function findClipPath(tracks, clipId) {
